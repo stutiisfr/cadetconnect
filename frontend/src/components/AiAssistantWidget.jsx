@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, X, Minimize2, Sparkles, Shield } from 'lucide-react';
+import { getApiUrl } from '../config';
 
 export const AiAssistantWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +29,7 @@ export const AiAssistantWidget = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/ai/chat', {
+      const res = await fetch(getApiUrl('/api/ai/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg })

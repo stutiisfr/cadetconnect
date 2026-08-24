@@ -146,7 +146,7 @@ export const Navbar = () => {
                 {/* Mobile Search Button */}
                 <button
                   onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                  className="md:hidden p-2 text-amber-400 hover:text-white hover:bg-navy-900 rounded-xl transition-colors"
+                  className="md:hidden p-1.5 sm:p-2 text-amber-400 hover:text-white hover:bg-navy-900 rounded-xl transition-colors"
                   title="Search anyone"
                   aria-label="Search"
                 >
@@ -155,7 +155,7 @@ export const Navbar = () => {
 
                 <Link
                   to="/messages"
-                  className="relative p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-lg transition-colors"
+                  className="hidden sm:flex relative p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-lg transition-colors"
                   title="Messages"
                 >
                   <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -164,7 +164,7 @@ export const Navbar = () => {
 
                 <Link
                   to="/notifications"
-                  className="relative p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-lg transition-colors"
+                  className="hidden sm:flex relative p-1.5 sm:p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-lg transition-colors"
                   title="Notifications"
                 >
                   <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -175,7 +175,7 @@ export const Navbar = () => {
                 <div className="relative">
                   <button
                     onClick={() => setMenuOpen(!menuOpen)}
-                    className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-navy-900 border border-transparent hover:border-navy-700 focus:outline-none transition-all"
+                    className="flex items-center space-x-2 p-1 rounded-lg hover:bg-navy-900 border border-transparent hover:border-navy-700 focus:outline-none transition-all"
                   >
                     <img
                       src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'}

@@ -3,15 +3,15 @@ import React from 'react';
 export const Logo = ({ size = 'md', showText = true, className = '' }) => {
   const sizeClasses = {
     sm: 'w-7 h-7',
-    md: 'w-10 h-10',
-    lg: 'w-14 h-14',
-    xl: 'w-20 h-20'
+    md: 'w-8 h-8 sm:w-10 sm:h-10',
+    lg: 'w-12 h-12 sm:w-14 sm:h-14',
+    xl: 'w-16 h-16 sm:w-20 sm:h-20'
   };
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-1.5 sm:gap-3 select-none ${className}`}>
       {/* Official Military Shield Emblem SVG */}
-      <div className={`${sizeClasses[size] || 'w-10 h-10'} relative flex-shrink-0 bg-navy-950 rounded-xl p-1 shadow-lg border border-navy-700 flex items-center justify-center`}>
+      <div className={`${sizeClasses[size] || 'w-8 h-8 sm:w-10 sm:h-10'} relative flex-shrink-0 bg-navy-950 rounded-xl p-0.5 sm:p-1 shadow-lg border border-navy-700 flex items-center justify-center`}>
         <svg viewBox="0 0 100 120" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Shield Outer Path */}
           <path d="M50 5 L90 20 V60 C90 85 50 115 50 115 C50 115 10 85 10 60 V20 L50 5 Z" fill="#0F172A" stroke="#3F6212" strokeWidth="4"/>
@@ -30,11 +30,11 @@ export const Logo = ({ size = 'md', showText = true, className = '' }) => {
       </div>
 
       {showText && (
-        <div className="flex items-center gap-1">
-          <span className="text-xl font-extrabold tracking-wider text-white font-heading">
+        <div className="flex items-center gap-1 font-heading whitespace-nowrap">
+          <span className="text-base sm:text-xl font-extrabold tracking-wider text-white">
             CADET
           </span>
-          <span className="text-xl font-extrabold tracking-wider text-olive-500 font-heading">
+          <span className="text-base sm:text-xl font-extrabold tracking-wider text-olive-500">
             CONNECT
           </span>
         </div>

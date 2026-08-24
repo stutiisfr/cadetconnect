@@ -6,7 +6,7 @@ import {
   Home, Users, Compass, BookOpen, Calendar, 
   UserCheck, MessageSquare, Bell, Search, ShieldAlert,
   LogOut, User, Lock, Film, Briefcase, Bot, Sparkles,
-  LogIn, UserPlus, Menu, X, ChevronDown, MoreHorizontal
+  LogIn, UserPlus, Menu, X, ChevronDown, MoreHorizontal, ArrowRight
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -17,11 +17,14 @@ export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
+      setMobileSearchOpen(false);
+      setMobileDrawerOpen(false);
     }
   };
 
@@ -73,7 +76,7 @@ export const Navbar = () => {
                 <div className="relative w-full">
                   <input
                     type="text"
-                    placeholder="Search cadets, notes, camps..."
+                    placeholder="Search anyone, cadets, notes, camps..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-navy-900 text-slate-200 text-xs rounded-xl pl-9 pr-3 py-2 border border-navy-700 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-slate-500"
@@ -138,7 +141,18 @@ export const Navbar = () => {
               </nav>
 
               {/* Right User Controls */}
-              <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+              <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+                
+                {/* Mobile Search Button */}
+                <button
+                  onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                  className="md:hidden p-2 text-amber-400 hover:text-white hover:bg-navy-900 rounded-xl transition-colors"
+                  title="Search anyone"
+                  aria-label="Search"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+
                 <Link
                   to="/messages"
                   className="relative p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-lg transition-colors"
@@ -253,7 +267,7 @@ export const Navbar = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-100 hover:text-white bg-navy-900 hover:bg-navy-800 border border-slate-700 hover:border-amber-400 rounded-xl shadow-sm transition-all"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-slate-100 hover:text-white bg-navy-900 hover:bg-navy-800 border border-slate-700 hover:border-amber-400 rounded-xl shadow-sm transition-all"
                   id="navbar-sign-in-btn"
                 >
                   <LogIn className="w-3.5 h-3.5 text-amber-400" />
@@ -262,7 +276,7 @@ export const Navbar = () => {
 
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-olive-700 hover:bg-olive-600 text-white rounded-xl border border-olive-500 shadow-md transition-all"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold bg-olive-700 hover:bg-olive-600 text-white rounded-xl border border-olive-500 shadow-md transition-all"
                   id="navbar-join-btn"
                 >
                   <UserPlus className="w-3.5 h-3.5 text-white" />
@@ -274,6 +288,41 @@ export const Navbar = () => {
 
         </div>
       </div>
+
+      {/* Expandable Mobile Search Bar on Top */}
+      {mobileSearchOpen && (
+        <div className="md:hidden bg-navy-950 border-t border-navy-800 px-3 py-2.5 animate-in slide-in-from-top-2 duration-150">
+          <form onSubmit={handleSearch} className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search anyone (cadet, mentor, unit, notes)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-navy-900 text-white text-xs rounded-xl pl-9 pr-8 py-2.5 border border-amber-500/70 focus:outline-none focus:border-amber-400 placeholder:text-slate-400 font-medium shadow-inner"
+              />
+              <Search className="w-4 h-4 text-amber-400 absolute left-3 top-3" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="bg-amber-500 hover:bg-amber-400 text-navy-950 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all flex items-center gap-1 shrink-0"
+            >
+              <span>Search</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </form>
+        </div>
+      )}
     </header>
   );
 };

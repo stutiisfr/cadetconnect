@@ -264,22 +264,22 @@ export const Navbar = () => {
                 ))}
               </nav>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
                 <Link
                   to="/login"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-slate-100 hover:text-white bg-navy-900 hover:bg-navy-800 border border-slate-700 hover:border-amber-400 rounded-xl shadow-sm transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-slate-100 hover:text-white bg-navy-900 hover:bg-navy-800 border border-slate-700 hover:border-amber-400 rounded-xl shadow-sm transition-all whitespace-nowrap"
                   id="navbar-sign-in-btn"
                 >
-                  <LogIn className="w-3.5 h-3.5 text-amber-400" />
+                  <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                   <span>Sign In</span>
                 </Link>
 
                 <Link
                   to="/register"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold bg-olive-700 hover:bg-olive-600 text-white rounded-xl border border-olive-500 shadow-md transition-all"
+                  className="flex items-center gap-1 px-2.5 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold bg-olive-700 hover:bg-olive-600 text-white rounded-xl border border-olive-500 shadow-md transition-all whitespace-nowrap"
                   id="navbar-join-btn"
                 >
-                  <UserPlus className="w-3.5 h-3.5 text-white" />
+                  <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white shrink-0" />
                   <span>Join Free</span>
                 </Link>
               </div>

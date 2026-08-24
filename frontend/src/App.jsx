@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-sand-100 flex flex-col pb-20 lg:pb-0 relative">
+    <div className="min-h-screen bg-navy-950 flex flex-col pb-20 lg:pb-0 relative overflow-x-hidden max-w-full">
       <Navbar />
       <div className="flex-1">
         <Routes>

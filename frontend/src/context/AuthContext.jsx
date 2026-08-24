@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getApiUrl } from '../config';
 
 const AuthContext = createContext(null);
 
@@ -20,7 +21,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const safeFetchJson = async (url, options = {}) => {
-    const res = await fetch(url, options);
+    const fullUrl = getApiUrl(url);
+    const res = await fetch(fullUrl, options);
     const contentType = res.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Server returned an unexpected non-JSON response. Please ensure backend server is online.');

@@ -52,6 +52,14 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Health Check
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    platform: 'CadetConnect - NCC & Defence Community Platform',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ONLINE',

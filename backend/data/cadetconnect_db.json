@@ -319,6 +319,22 @@
   ],
   "connections": [
     {
+      "id": "394c5929-dfea-45d4-b446-fe1aaf6cba62",
+      "createdAt": "2026-08-24T17:59:11.813Z",
+      "updatedAt": "2026-08-24T17:59:11.813Z",
+      "requesterId": "usr-admin-master",
+      "receiverId": "cbfd9e51-8587-417d-b91c-e6dc75b1965d",
+      "status": "ACCEPTED"
+    },
+    {
+      "id": "d1823cc0-7b02-4177-a363-16d34950071e",
+      "createdAt": "2026-08-24T17:59:05.616Z",
+      "updatedAt": "2026-08-24T17:59:05.616Z",
+      "requesterId": "usr-admin-master",
+      "receiverId": "12321ed5-4d23-4222-864f-fe48d2811b9e",
+      "status": "ACCEPTED"
+    },
+    {
       "id": "bbf7c0cd-9f57-4559-af85-1c0880cba92d",
       "createdAt": "2026-08-24T12:40:34.325Z",
       "updatedAt": "2026-08-24T12:40:34.325Z",
@@ -649,7 +665,7 @@
     {
       "id": "evt-401",
       "createdAt": "2026-08-24T12:38:39.447Z",
-      "updatedAt": "2026-08-24T12:41:24.344Z",
+      "updatedAt": "2026-08-24T17:59:30.723Z",
       "title": "State Combined Annual Training Camp (CATC 2026)",
       "category": "NCC Camp",
       "date": "2026-09-15",
@@ -659,11 +675,19 @@
       "description": "10-Day intensive residential training camp covering obstacle course, range firing (.22 & 7.62mm SLR), tactical field craft, drill competitions, and cultural evening.",
       "banner": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1000&auto=format&fit=crop&q=80",
       "eligibility": "Enrolled Senior Division (SD) and Senior Wing (SW) Cadets",
-      "participantsCount": 381,
+      "participantsCount": 382,
       "maxParticipants": 450
     }
   ],
   "event_registrations": [
+    {
+      "id": "a42bc647-e217-4603-84b4-610ea9b4cd0f",
+      "createdAt": "2026-08-24T17:59:30.721Z",
+      "updatedAt": "2026-08-24T17:59:30.721Z",
+      "eventId": "evt-401",
+      "userId": "usr-admin-master",
+      "registeredAt": "2026-08-24T17:59:30.721Z"
+    },
     {
       "id": "0b82b74c-8677-45d1-becb-e7f1b44ffd68",
       "createdAt": "2026-08-24T12:41:24.342Z",
@@ -702,6 +726,28 @@
   "messages": [],
   "conversations": [],
   "notifications": [
+    {
+      "id": "8699e64f-b3c7-4f7b-8178-2b7155a8876d",
+      "createdAt": "2026-08-24T17:59:11.815Z",
+      "updatedAt": "2026-08-24T17:59:11.815Z",
+      "userId": "cbfd9e51-8587-417d-b91c-e6dc75b1965d",
+      "actorName": "CadetConnect Moderation Desk",
+      "actorAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "type": "CONNECTION_ACCEPTED",
+      "message": "CadetConnect Moderation Desk connected with you on CadetConnect.",
+      "isRead": false
+    },
+    {
+      "id": "ea0fc21f-d872-443c-80bb-879a3fa2cf85",
+      "createdAt": "2026-08-24T17:59:05.618Z",
+      "updatedAt": "2026-08-24T17:59:05.618Z",
+      "userId": "12321ed5-4d23-4222-864f-fe48d2811b9e",
+      "actorName": "CadetConnect Moderation Desk",
+      "actorAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "type": "CONNECTION_ACCEPTED",
+      "message": "CadetConnect Moderation Desk connected with you on CadetConnect.",
+      "isRead": false
+    },
     {
       "id": "ce0ecb4f-bf6d-43ac-a5ee-7379010a156d",
       "createdAt": "2026-08-24T12:41:46.741Z",

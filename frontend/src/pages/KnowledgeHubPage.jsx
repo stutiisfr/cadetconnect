@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config';
 import { 
   BookOpen, Download, Star, Upload, Search, ShieldCheck, Award, 
   FileText, CheckCircle2, ChevronRight, X, AlertCircle, File, Check, Sparkles, Filter
@@ -36,7 +37,7 @@ export const KnowledgeHubPage = () => {
       if (search) params.append('search', search);
       if (params.toString()) url += `?${params.toString()}`;
 
-      const res = await fetch(url);
+      const res = await fetch(getApiUrl(url));
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const data = await res.json();
@@ -67,7 +68,7 @@ export const KnowledgeHubPage = () => {
   // Handle Document Download Execution
   const handleDownload = async (note) => {
     try {
-      await fetch(`/api/knowledge/${note.id}/download`, { method: 'POST' });
+      await fetch(getApiUrl(`/api/knowledge/${note.id}/download`), { method: 'POST' });
       showToast(`Downloading "${note.title}" (${note.fileSize || '2.5 MB'})`);
 
       // Trigger realistic browser download / blob view
@@ -105,7 +106,7 @@ export const KnowledgeHubPage = () => {
         fileUrl = URL.createObjectURL(selectedFile);
       }
 
-      const res = await fetch('/api/knowledge/upload', {
+      const res = await fetch(getApiUrl('/api/knowledge/upload'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

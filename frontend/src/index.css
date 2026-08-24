@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-sand-100 text-navy-900 font-sans;
+  }
+}
+
+/* Custom scrollbars for clean institutional look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.military-border {
+  border: 1px solid #cbd5e1;
+}
+
+.badge-cadet {
+  @apply bg-olive-700 text-white font-medium px-2 py-0.5 rounded text-xs inline-flex items-center gap-1;
+}
+
+.badge-verified {
+  @apply bg-navy-800 text-amber-400 border border-amber-500/30 font-semibold px-2.5 py-0.5 rounded-md text-xs inline-flex items-center gap-1;
+}

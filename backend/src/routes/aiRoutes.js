@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Knowledge Base for CadetConnect AI Assistant (Veer AI)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+
+// Knowledge Base Fallback for CadetConnect AI Assistant (Veer AI)
 const DEFENCE_KNOWLEDGE_BASE = {
   ssb: [
     "In SSB Stage I PPDT (Picture Perception & Discussion Test), observe the background, number of characters, mood, and age within 30 seconds. Write a positive, realistic, and action-oriented story focused on problem-solving within 3 minutes.",
@@ -20,14 +22,53 @@ const DEFENCE_KNOWLEDGE_BASE = {
   ]
 };
 
-// Interactive AI Chat Assistant Endpoint
-router.post('/chat', (req, res) => {
+// Interactive AI Chat Assistant Endpoint with Gemini API Integration
+router.post('/chat', async (req, res) => {
   try {
-    const { message, history } = req.body;
+    const { message } = req.body;
     if (!message || !message.trim()) {
       return res.status(400).json({ success: false, error: 'Message cannot be empty.' });
     }
 
+    // Try calling Google Gemini Live Generative API if key is present
+    if (GEMINI_API_KEY) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    text: `System Instruction: You are Veer AI, the official AI mentor on CadetConnect (India's premier NCC Cadets & Defence Aspirants platform). Answer authoritatively, clearly, and concisely. Keep formatting clean with bullet points. Always start response with 'Jai Hind!'. Question: ${message}`
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (candidateText && candidateText.trim()) {
+            return res.json({
+              success: true,
+              reply: candidateText.trim(),
+              source: 'Gemini AI Engine',
+              timestamp: new Date().toISOString()
+            });
+          }
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini API call failed, using knowledge base fallback:', geminiErr.message);
+      }
+    }
+
+    // Fallback Knowledge Engine
     const q = message.toLowerCase();
     let reply = "";
 
@@ -48,6 +89,7 @@ router.post('/chat', (req, res) => {
     return res.json({
       success: true,
       reply,
+      source: 'Knowledge Base',
       timestamp: new Date().toISOString()
     });
   } catch (err) {

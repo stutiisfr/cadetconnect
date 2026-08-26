@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const db = require('../db/database');
+const pgRepository = require('../db/pgRepository');
 const { verifyToken, getOptionalUser } = require('../middleware/auth');
 
 const router = express.Router();
@@ -53,74 +54,60 @@ router.post('/upload', upload.single('file'), (req, res) => {
   });
 });
 
-// 1. Get Home Feed with Category & Search Filter (public read)
-router.get('/', (req, res) => {
-  const { category, search } = req.query;
-  let posts = db.find('posts');
+// 1. Get Home Feed with Category, Search Filter & Pagination (public read)
+router.get('/', async (req, res) => {
+  const { category, search, limit = 20, offset = 0 } = req.query;
+  try {
+    const posts = await pgRepository.getPosts({
+      category,
+      search,
+      limit: parseInt(limit) || 20,
+      offset: parseInt(offset) || 0
+    });
 
-  if (category && category !== 'For You' && category !== 'All') {
-    posts = posts.filter(p => p.category === category);
+    return res.json({
+      success: true,
+      count: posts.length,
+      posts
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
-
-  if (search) {
-    const q = search.toLowerCase();
-    posts = posts.filter(p => 
-      p.content.toLowerCase().includes(q) ||
-      p.authorName.toLowerCase().includes(q) ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
-    );
-  }
-
-  return res.json({
-    success: true,
-    count: posts.length,
-    posts
-  });
 });
 
 // 2. Create Feed Post — REQUIRES AUTHENTICATION
-router.post('/create', verifyToken, (req, res) => {
+router.post('/create', verifyToken, async (req, res) => {
   const { content, category, mediaUrl, tags } = req.body;
   if (!content || !content.trim()) {
     return res.status(400).json({ success: false, error: 'Post content cannot be empty.' });
   }
 
-  const user = db.findOne('users', u => u.id === req.user.id);
-  if (!user) {
-    return res.status(401).json({ success: false, error: 'User not found.' });
-  }
-
-  const post = db.insert('posts', {
-    authorId: user.id,
-    authorName: user.name,
-    authorRole: user.verificationBadge || user.role,
-    authorAvatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-    category: category || 'NCC',
-    content: content.trim(),
-    mediaUrl: mediaUrl || null,
-    appreciationsCount: 0,
-    commentsCount: 0,
-    repostsCount: 0,
-    savedCount: 0,
-    tags: Array.isArray(tags) ? tags : ['CadetConnect', (category || 'Defence').replace(/\s+/g, '')],
-    createdAt: new Date().toISOString()
-  });
-
-  // Real-Time WebSocket Broadcast to all connected clients
-  const broadcastFn = req.app.get('broadcastWebSocketEvent');
-  if (broadcastFn) {
-    broadcastFn({
-      type: 'NEW_FEED_POST',
-      post,
-      timestamp: new Date().toISOString()
+  try {
+    const post = await pgRepository.createPost(req.user.id, {
+      content: content.trim(),
+      category: category || 'NCC',
+      mediaUrl: mediaUrl || null,
+      tags
     });
-  }
 
-  return res.status(201).json({
-    success: true,
-    message: 'Post created & broadcast in real time across CadetConnect ecosystem.',
-    post
-  });
+    // Real-Time WebSocket Broadcast to all connected clients
+    const broadcastFn = req.app.get('broadcastWebSocketEvent');
+    if (broadcastFn) {
+      broadcastFn({
+        type: 'NEW_FEED_POST',
+        post,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Post created & broadcast in real time across CadetConnect ecosystem.',
+      post
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // 3. "Appreciate" Post — REQUIRES AUTHENTICATION

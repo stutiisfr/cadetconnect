@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db/database');
+const pgRepository = require('../db/pgRepository');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
@@ -192,6 +193,70 @@ router.get('/me/card-data', verifyToken, (req, res) => {
       qrPayload: `CADETCONNECT:${user.username}:${user.role}`
     }
   });
+});
+
+// Get Education Records for User
+router.get('/:username/education', async (req, res) => {
+  try {
+    const user = await pgRepository.findUserByUsername(req.params.username);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found.' });
+    const records = await pgRepository.getEducationRecords(user.id);
+    return res.json({ success: true, education: records });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Add Education Record
+router.post('/education', verifyToken, async (req, res) => {
+  try {
+    const record = await pgRepository.addEducationRecord(req.user.id, req.body);
+    return res.status(201).json({ success: true, message: 'Education record added.', record });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Delete Education Record
+router.delete('/education/:id', verifyToken, async (req, res) => {
+  try {
+    await pgRepository.deleteEducationRecord(req.params.id, req.user.id);
+    return res.json({ success: true, message: 'Education record deleted.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get Experience Records for User
+router.get('/:username/experience', async (req, res) => {
+  try {
+    const user = await pgRepository.findUserByUsername(req.params.username);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found.' });
+    const records = await pgRepository.getExperienceRecords(user.id);
+    return res.json({ success: true, experience: records });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Add Experience Record
+router.post('/experience', verifyToken, async (req, res) => {
+  try {
+    const record = await pgRepository.addExperienceRecord(req.user.id, req.body);
+    return res.status(201).json({ success: true, message: 'Experience record added.', record });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Delete Experience Record
+router.delete('/experience/:id', verifyToken, async (req, res) => {
+  try {
+    await pgRepository.deleteExperienceRecord(req.params.id, req.user.id);
+    return res.json({ success: true, message: 'Experience record deleted.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 module.exports = router;

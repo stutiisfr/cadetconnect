@@ -41,6 +41,9 @@ function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           
           {/* Protected Main Pages */}
           <Route path="/home" element={<ProtectedRoute><HomeFeedPage /></ProtectedRoute>} />

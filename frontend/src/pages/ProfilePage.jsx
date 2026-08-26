@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { NccJourneyTimeline } from '../components/NccJourneyTimeline';
 import { DigitalProfileCardModal } from '../components/DigitalProfileCardModal';
+import { EducationSection } from '../components/EducationSection';
+import { ExperienceSection } from '../components/ExperienceSection';
+import { ProfileCompletionBar } from '../components/ProfileCompletionBar';
 import { PostCard } from '../components/PostCard';
 import { API_BASE_URL } from '../config';
 import { 
@@ -15,6 +18,8 @@ export const ProfilePage = () => {
   const { user: currentUser, token, updateUserProfile } = useAuth();
 
   const [profileData, setProfileData] = useState(null);
+  const [educationList, setEducationList] = useState([]);
+  const [experienceList, setExperienceList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCardModal, setShowCardModal] = useState(false);
   const [cardData, setCardData] = useState(null);
@@ -49,33 +54,35 @@ export const ProfilePage = () => {
       const data = await res.json();
       if (data.success) {
         setProfileData(data.profile);
-        populateEditForm(data.profile);
+        setEditName(data.profile.name || '');
+        setEditBio(data.profile.bio || '');
+        setEditAvatar(data.profile.avatar || '');
+        setEditPhone(data.profile.phone || '');
+        setEditCollege(data.profile.college || '');
+        setEditLocation(data.profile.location || '');
+        if (data.profile.cadetDetails) {
+          setEditDirectorate(data.profile.cadetDetails.directorate || '');
+          setEditUnit(data.profile.cadetDetails.unit || '');
+          setEditRank(data.profile.cadetDetails.rank || '');
+        }
+        if (data.profile.aspirantDetails) {
+          setEditTargetExams((data.profile.aspirantDetails.targetExams || []).join(', '));
+          setEditPreferredService(data.profile.aspirantDetails.preferredService || '');
+        }
       }
+
+      // Fetch Education & Experience
+      const eduRes = await fetch(`${API_BASE_URL}/api/profiles/${targetUser}/education`);
+      const eduData = await eduRes.json();
+      if (eduData.success) setEducationList(eduData.education || []);
+
+      const expRes = await fetch(`${API_BASE_URL}/api/profiles/${targetUser}/experience`);
+      const expData = await expRes.json();
+      if (expData.success) setExperienceList(expData.experience || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load profile data', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const populateEditForm = (prof) => {
-    if (!prof) return;
-    setEditName(prof.name || '');
-    setEditBio(prof.bio || '');
-    setEditAvatar(prof.avatar || '');
-    setEditPhone(prof.phone || '');
-    setEditCollege(prof.college || '');
-    setEditLocation(prof.location || '');
-
-    if (prof.cadetDetails) {
-      setEditDirectorate(prof.cadetDetails.directorate || '');
-      setEditUnit(prof.cadetDetails.unit || '');
-      setEditRank(prof.cadetDetails.rank || '');
-    }
-
-    if (prof.aspirantDetails) {
-      setEditTargetExams((prof.aspirantDetails.targetExams || []).join(', '));
-      setEditPreferredService(prof.aspirantDetails.preferredService || 'Indian Army');
     }
   };
 
@@ -83,62 +90,96 @@ export const ProfilePage = () => {
     fetchProfile();
   }, [username, currentUser]);
 
-  const handleOpenCard = async () => {
-    if (!token) return alert('Please sign in to generate digital identity card.');
+  const handleAddEducation = async (eduPayload) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/profiles/me/card-data`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${API_BASE_URL}/api/profiles/education`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(eduPayload)
       });
       const data = await res.json();
       if (data.success) {
-        setCardData(data.cardData);
-        setShowCardModal(true);
+        setEducationList(prev => [data.record, ...prev]);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to add education', err);
+    }
+  };
+
+  const handleDeleteEducation = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/profiles/education/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEducationList(prev => prev.filter(e => e.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete education', err);
+    }
+  };
+
+  const handleAddExperience = async (expPayload) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/profiles/experience`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(expPayload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExperienceList(prev => [data.record, ...prev]);
+      }
+    } catch (err) {
+      console.error('Failed to add experience', err);
+    }
+  };
+
+  const handleDeleteExperience = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/profiles/experience/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExperienceList(prev => prev.filter(e => e.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete experience', err);
     }
   };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    if (!token) return alert('Please sign in to save profile edits.');
-
     setIsUpdating(true);
     try {
-      const targetExamsArray = editTargetExams.split(',').map(s => s.trim()).filter(Boolean);
-
-      const res = await fetch(`${API_BASE_URL}/api/profiles/me/update`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: editName,
-          bio: editBio,
-          avatar: editAvatar,
-          phone: editPhone,
-          college: editCollege,
-          location: editLocation,
-          directorate: editDirectorate,
-          unit: editUnit,
-          rank: editRank,
-          targetExams: targetExamsArray,
-          preferredService: editPreferredService
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setShowEditModal(false);
-        if (updateUserProfile) updateUserProfile(data.user);
-        fetchProfile();
-        alert('Personal details updated successfully!');
-      } else {
-        alert(data.error || 'Failed to update profile.');
-      }
+      const payload = {
+        name: editName,
+        bio: editBio,
+        avatar: editAvatar,
+        phone: editPhone,
+        college: editCollege,
+        location: editLocation,
+        directorate: editDirectorate,
+        unit: editUnit,
+        rank: editRank,
+        targetExams: editTargetExams.split(',').map(s => s.trim()).filter(Boolean),
+        preferredService: editPreferredService
+      };
+      await updateUserProfile(payload);
+      setShowEditModal(false);
+      fetchProfile();
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'Failed to update profile details.');
     } finally {
       setIsUpdating(false);
     }
@@ -146,14 +187,12 @@ export const ProfilePage = () => {
 
   const handleAddJourneyMilestone = async (e) => {
     e.preventDefault();
-    if (!jTitle.trim()) return;
-
     try {
       const res = await fetch(`${API_BASE_URL}/api/profiles/me/journey`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           year: jYear,
@@ -165,7 +204,24 @@ export const ProfilePage = () => {
       const data = await res.json();
       if (data.success) {
         setShowJourneyModal(false);
+        setJTitle('');
+        setJDetail('');
         fetchProfile();
+      }
+    } catch (err) {
+      alert('Failed to add journey milestone');
+    }
+  };
+
+  const handleOpenCard = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/profiles/me/card-data`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCardData(data.cardData);
+        setShowCardModal(true);
       }
     } catch (err) {
       console.error(err);
@@ -174,48 +230,50 @@ export const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12 text-center text-slate-500">
-        Loading defence profile...
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
+        <div className="bg-white rounded-lg h-48 animate-pulse border border-slate-200"></div>
+        <div className="bg-white rounded-lg h-64 animate-pulse border border-slate-200"></div>
       </div>
     );
   }
 
   if (!profileData) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-12 text-center">
-        <h3 className="text-lg font-bold text-navy-900">Profile Not Found</h3>
+      <div className="max-w-md mx-auto my-12 p-6 bg-white rounded-lg border border-slate-200 text-center">
+        <h2 className="text-lg font-bold text-navy-900">Profile Not Found</h2>
+        <p className="text-xs text-slate-500 mt-2">The user profile you are looking for does not exist or has been removed.</p>
       </div>
     );
   }
 
-  const isOwner = currentUser && currentUser.id === profileData.id;
+  const isOwner = currentUser && (currentUser.id === profileData.id || currentUser.username === profileData.username);
   const isCadet = profileData.role === 'CADET';
   const isAspirant = profileData.role === 'ASPIRANT';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       
-      {/* Profile Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+      {/* Header Banner & Core Card */}
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="h-32 bg-navy-900 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-900 to-olive-900 opacity-90"></div>
           <div className="absolute bottom-3 right-4 flex space-x-2">
             {isOwner && (
               <button
                 onClick={() => setShowEditModal(true)}
-                className="bg-white/90 hover:bg-white text-navy-950 text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-md transition-colors"
+                className="bg-white/90 hover:bg-white text-navy-950 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
               >
                 <Edit className="w-4 h-4 text-olive-700" />
-                <span>Edit Profile Details</span>
+                <span>Edit Profile</span>
               </button>
             )}
 
             <button
               onClick={handleOpenCard}
-              className="bg-amber-500 hover:bg-amber-400 text-navy-950 text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-md transition-colors"
+              className="bg-amber-500 hover:bg-amber-400 text-navy-950 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
             >
               <QrCode className="w-4 h-4" />
-              <span>Digital Identity Card</span>
+              <span>Digital Card</span>
             </button>
           </div>
         </div>
@@ -243,14 +301,14 @@ export const ProfilePage = () => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => alert(`Connection request sent to ${profileData.name}`)}
-                  className="bg-olive-700 hover:bg-olive-600 text-white text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 transition-colors shadow-sm"
+                  className="bg-olive-700 hover:bg-olive-600 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Connect</span>
                 </button>
                 <button
                   onClick={() => alert(`Direct message opened with ${profileData.name}`)}
-                  className="bg-navy-800 hover:bg-navy-700 text-white text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 transition-colors"
+                  className="bg-navy-800 hover:bg-navy-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-colors"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Message</span>
@@ -282,28 +340,33 @@ export const ProfilePage = () => {
         </div>
       </div>
 
+      {/* Profile Completion Indicator */}
+      {isOwner && (
+        <ProfileCompletionBar profile={{ ...profileData, education: educationList, experience: experienceList }} />
+      )}
+
       {/* Role Specific Detail Card */}
       {isCadet && profileData.cadetDetails && (
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <h3 className="text-sm font-bold text-navy-900 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
             <Shield className="w-4 h-4 text-olive-700" />
             NCC Unit & Service Information
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
+            <div className="bg-sand-50 p-3 rounded-xl border border-slate-200">
               <span className="text-slate-500 block text-[10px]">Directorate</span>
               <span className="font-semibold text-navy-900">{profileData.cadetDetails.directorate}</span>
             </div>
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
+            <div className="bg-sand-50 p-3 rounded-xl border border-slate-200">
               <span className="text-slate-500 block text-[10px]">Group / Battalion</span>
               <span className="font-semibold text-navy-900">{profileData.cadetDetails.group}</span>
             </div>
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
+            <div className="bg-sand-50 p-3 rounded-xl border border-slate-200">
               <span className="text-slate-500 block text-[10px]">Unit</span>
               <span className="font-semibold text-navy-900">{profileData.cadetDetails.unit}</span>
             </div>
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
+            <div className="bg-sand-50 p-3 rounded-xl border border-slate-200">
               <span className="text-slate-500 block text-[10px]">Certificate Status</span>
               <span className="font-semibold text-olive-800">{profileData.cadetDetails.certificateStatus}</span>
             </div>
@@ -311,37 +374,21 @@ export const ProfilePage = () => {
         </div>
       )}
 
-      {isAspirant && profileData.aspirantDetails && (
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-navy-900 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
-            <BookOpen className="w-4 h-4 text-blue-700" />
-            Defence Aspirant Preparation Goals
-          </h3>
+      {/* Education Section */}
+      <EducationSection
+        educationList={educationList}
+        onAddEducation={handleAddEducation}
+        onDeleteEducation={handleDeleteEducation}
+        isOwner={isOwner}
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
-              <span className="text-slate-500 block text-[10px]">Target Examinations</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {(profileData.aspirantDetails.targetExams || []).map((ex, i) => (
-                  <span key={i} className="bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded text-[10px]">
-                    {ex}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
-              <span className="text-slate-500 block text-[10px]">Preferred Service</span>
-              <span className="font-semibold text-navy-900">{profileData.aspirantDetails.preferredService}</span>
-            </div>
-
-            <div className="bg-sand-50 p-3 rounded border border-slate-200">
-              <span className="text-slate-500 block text-[10px]">Preparation Level</span>
-              <span className="font-semibold text-emerald-800">{profileData.aspirantDetails.prepLevel}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Experience Section */}
+      <ExperienceSection
+        experienceList={experienceList}
+        onAddExperience={handleAddExperience}
+        onDeleteExperience={handleDeleteExperience}
+        isOwner={isOwner}
+      />
 
       {/* Visual NCC Journey Timeline Section */}
       <NccJourneyTimeline
@@ -358,260 +405,18 @@ export const ProfilePage = () => {
         {profileData.posts && profileData.posts.length > 0 ? (
           profileData.posts.map(post => <PostCard key={post.id} post={post} />)
         ) : (
-          <div className="bg-white p-6 rounded-lg border border-slate-200 text-center text-xs text-slate-500">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 text-center text-xs text-slate-500">
             No published posts yet.
           </div>
         )}
       </div>
 
-      {/* EDIT PROFILE & PERSONAL DETAILS MODAL */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-slate-300 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-navy-900 max-h-[90vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-bold text-navy-900 flex items-center gap-2">
-                <Edit className="w-5 h-5 text-olive-700" />
-                Edit Personal & Defence Details
-              </h3>
-              <button 
-                onClick={() => setShowEditModal(false)}
-                className="text-slate-400 hover:text-slate-700 text-sm font-bold px-2 py-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-3 text-xs">
-              
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Avatar Image URL</label>
-                <input
-                  type="url"
-                  value={editAvatar}
-                  onChange={(e) => setEditAvatar(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                  placeholder="https://images.unsplash.com/..."
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Bio / Headline</label>
-                <textarea
-                  rows={2}
-                  value={editBio}
-                  onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded p-2 text-navy-900"
-                  placeholder="Tell us about your rank, unit, or target exams..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Mobile Number</label>
-                  <input
-                    type="text"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Location / State</label>
-                  <input
-                    type="text"
-                    value={editLocation}
-                    onChange={(e) => setEditLocation(e.target.value)}
-                    className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">College / Institution</label>
-                <input
-                  type="text"
-                  value={editCollege}
-                  onChange={(e) => setEditCollege(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                />
-              </div>
-
-              {/* Role specific inputs */}
-              {isCadet && (
-                <div className="bg-sand-100 p-3 rounded-lg space-y-2 border border-slate-200">
-                  <span className="font-bold text-olive-800 block text-[11px]">NCC Cadet Details</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-600">Directorate</label>
-                      <input
-                        type="text"
-                        value={editDirectorate}
-                        onChange={(e) => setEditDirectorate(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-600">Unit</label>
-                      <input
-                        type="text"
-                        value={editUnit}
-                        onChange={(e) => setEditUnit(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-600">Rank</label>
-                      <input
-                        type="text"
-                        value={editRank}
-                        onChange={(e) => setEditRank(e.target.value)}
-                        className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {isAspirant && (
-                <div className="bg-sand-100 p-3 rounded-lg space-y-2 border border-slate-200">
-                  <span className="font-bold text-blue-800 block text-[11px]">Aspirant Goals</span>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-600">Target Exams (comma separated)</label>
-                    <input
-                      type="text"
-                      value={editTargetExams}
-                      onChange={(e) => setEditTargetExams(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-600">Preferred Service</label>
-                    <input
-                      type="text"
-                      value={editPreferredService}
-                      onChange={(e) => setEditPreferredService(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-1.5 text-xs"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="px-5 py-2 bg-olive-700 text-white font-bold rounded hover:bg-olive-600 transition-colors"
-                >
-                  {isUpdating ? 'Saving...' : 'Save Personal Details'}
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )}
-
-      {/* Digital Profile Card Modal */}
-      <DigitalProfileCardModal
-        isOpen={showCardModal}
-        onClose={() => setShowCardModal(false)}
-        cardData={cardData}
-      />
-
-      {/* Add Journey Milestone Modal */}
-      {showJourneyModal && (
-        <div className="fixed inset-0 bg-navy-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-slate-300 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-navy-900">Add NCC Journey Milestone</h3>
-
-            <form onSubmit={handleAddJourneyMilestone} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-navy-900 mb-1">Year</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 2025"
-                  value={jYear}
-                  onChange={(e) => setJYear(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-navy-900 mb-1">Category</label>
-                <select
-                  value={jCategory}
-                  onChange={(e) => setJCategory(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                >
-                  <option value="Camp">Camp (CATC, RDC, TSC)</option>
-                  <option value="Rank">Rank / Appointment</option>
-                  <option value="Certificate">Certificate (A/B/C)</option>
-                  <option value="Achievement">Achievement / Award</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-navy-900 mb-1">Milestone Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Republic Day Camp (RDC 2025 - New Delhi)"
-                  value={jTitle}
-                  onChange={(e) => setJTitle(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded px-3 py-2 text-navy-900"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-navy-900 mb-1">Details / Description</label>
-                <textarea
-                  rows={2}
-                  placeholder="Marched at Kartavya Path contingent..."
-                  value={jDetail}
-                  onChange={(e) => setJDetail(e.target.value)}
-                  className="w-full bg-sand-50 border border-slate-300 rounded p-2 text-navy-900"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowJourneyModal(false)}
-                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-olive-700 text-white font-semibold rounded hover:bg-olive-600"
-                >
-                  Save Milestone
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Digital Identity Card Modal */}
+      {showCardModal && cardData && (
+        <DigitalProfileCardModal
+          cardData={cardData}
+          onClose={() => setShowCardModal(false)}
+        />
       )}
     </div>
   );

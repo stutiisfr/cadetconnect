@@ -1,6 +1,37 @@
 {
   "users": [
     {
+      "id": "cc81ee5f-298a-4f27-a6e3-d75753b01f4a",
+      "createdAt": "2026-08-26T19:30:44.087Z",
+      "updatedAt": "2026-08-26T19:30:44.088Z",
+      "email": "test.cadet.fb@cadetconnect.org",
+      "password": "2f8f7c87-0985-4e8c-97df-260f9c6a9e02",
+      "name": "FB Cadet User",
+      "username": "test_cadet_fb_2860",
+      "role": "ASPIRANT",
+      "isVerified": true,
+      "verificationBadge": "Verified Aspirant",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "location": "India",
+      "phone": ""
+    },
+    {
+      "id": "ec6e0996-a19f-4388-85f7-f354cd59af0e",
+      "createdAt": "2026-08-26T19:30:44.074Z",
+      "updatedAt": "2026-08-26T19:30:44.085Z",
+      "email": "test.cadet.google@cadetconnect.org",
+      "password": "112610b0-dc3d-44d4-b2de-def6dae91688",
+      "name": "Google Cadet User",
+      "username": "test_cadet_google_4995",
+      "role": "ASPIRANT",
+      "isVerified": true,
+      "verificationBadge": "Verified Aspirant",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "location": "India",
+      "phone": "",
+      "emailVerified": true
+    },
+    {
       "id": "a237f98e-b08c-4fde-a041-c6e8275399c0",
       "createdAt": "2026-08-26T18:00:34.623Z",
       "updatedAt": "2026-08-26T18:00:34.623Z",
@@ -86,7 +117,7 @@
     {
       "id": "e2031eac-0e65-4ca4-9d70-d5bd56201c6d",
       "createdAt": "2026-08-24T17:46:50.685Z",
-      "updatedAt": "2026-08-26T18:18:54.331Z",
+      "updatedAt": "2026-08-26T19:30:44.099Z",
       "email": "cadet_543210@cadetconnect.org",
       "password": "$2a$10$QhIyb3MEXoQG6a3MV09R2e2oUUVLIAAoi2c8stvFK0HMLCIbo5T5G",
       "name": "Cadet Prateek Singh",
@@ -174,9 +205,9 @@
     {
       "id": "usr-cadet-rahul",
       "createdAt": "2026-08-24T12:38:39.437Z",
-      "updatedAt": "2026-08-24T12:38:39.438Z",
+      "updatedAt": "2026-08-26T19:30:44.448Z",
       "email": "rahul.das@cadetconnect.org",
-      "password": "$2a$10$WNirndbFuM9SRK1BK6TKluJ40yDqz7tb.MUonl/gsis0wywYZ793a",
+      "password": "$2a$12$0GKYd9z98ToMa8LlGafE8OwW0bMDTDfHLWrRr6syzXPvhYnxPtmru",
       "name": "Rahul Das",
       "username": "rahul_das_suo",
       "role": "CADET",
@@ -1036,5 +1067,16 @@
       "targetId": "post-103"
     }
   ],
-  "candidate_academic_profiles": []
+  "candidate_academic_profiles": [],
+  "password_reset_tokens": [
+    {
+      "id": "39c59350-be1b-4f0d-8f80-73c1e2404de3",
+      "createdAt": "2026-08-26T19:30:44.102Z",
+      "updatedAt": "2026-08-26T19:30:44.448Z",
+      "userId": "usr-cadet-rahul",
+      "tokenHash": "66e3b2f1cf70434034965a2b9985083ea699a73e10b1f322f3a09a7824301a94",
+      "expiresAt": "2026-08-26T19:45:44.102Z",
+      "usedAt": "2026-08-26T19:30:44.448Z"
+    }
+  ]
 }

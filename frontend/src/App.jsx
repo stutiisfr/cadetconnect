@@ -8,6 +8,7 @@ import { AiAssistantWidget } from './components/AiAssistantWidget';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { HomeFeedPage } from './pages/HomeFeedPage';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { NetworkPage } from './pages/NetworkPage';
@@ -39,6 +40,7 @@ function AppRoutes() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           
           {/* Protected Main Pages */}
           <Route path="/home" element={<ProtectedRoute><HomeFeedPage /></ProtectedRoute>} />

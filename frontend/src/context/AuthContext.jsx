@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      // Validate current token with backend /api/auth/me
       safeFetchJson('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -45,7 +44,6 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('cadetconnect_role_profile', JSON.stringify(data.roleProfile));
             }
           } else {
-            // Token is no longer valid
             logout();
           }
         })
@@ -73,6 +71,133 @@ export const AuthProvider = ({ children }) => {
       if (data.roleProfile) {
         localStorage.setItem('cadetconnect_role_profile', JSON.stringify(data.roleProfile));
       }
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (googleData) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(googleData)
+      });
+      if (!data.success) throw new Error(data.error || 'Google authentication failed');
+
+      setToken(data.token);
+      setUser(data.user);
+      setRoleProfile(data.roleProfile);
+      localStorage.setItem('cadetconnect_token', data.token);
+      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithLinkedIn = async (linkedinData) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/linkedin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(linkedinData)
+      });
+      if (!data.success) throw new Error(data.error || 'LinkedIn authentication failed');
+
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('cadetconnect_token', data.token);
+      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithFacebook = async (facebookData) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/facebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(facebookData)
+      });
+      if (!data.success) throw new Error(data.error || 'Facebook authentication failed');
+
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('cadetconnect_token', data.token);
+      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendMobileOtp = async (phone) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      if (!data.success) throw new Error(data.error || 'Failed to send OTP');
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyMobileOtp = async (payload) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!data.success) throw new Error(data.error || 'Invalid verification code');
+
+      setToken(data.token);
+      setUser(data.user);
+      setRoleProfile(data.roleProfile);
+      localStorage.setItem('cadetconnect_token', data.token);
+      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (!data.success) throw new Error(data.error || 'Forgot password request failed');
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    setLoading(true);
+    try {
+      const data = await safeFetchJson('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, newPassword })
+      });
+      if (!data.success) throw new Error(data.error || 'Password reset failed');
       return data;
     } finally {
       setLoading(false);
@@ -119,101 +244,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = async (googleData) => {
-    setLoading(true);
-    try {
-      const data = await safeFetchJson('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(googleData)
-      });
-      if (!data.success) throw new Error(data.error || 'Google login failed');
-
-      setToken(data.token);
-      setUser(data.user);
-      setRoleProfile(data.roleProfile);
-      localStorage.setItem('cadetconnect_token', data.token);
-      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
-      if (data.roleProfile) {
-        localStorage.setItem('cadetconnect_role_profile', JSON.stringify(data.roleProfile));
-      }
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendMobileOtp = async (phone) => {
-    setLoading(true);
-    try {
-      const data = await safeFetchJson('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-      if (!data.success) throw new Error(data.error || 'Failed to send OTP');
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyMobileOtp = async (payload) => {
-    setLoading(true);
-    try {
-      const data = await safeFetchJson('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!data.success) throw new Error(data.error || 'Invalid OTP code');
-
-      setToken(data.token);
-      setUser(data.user);
-      setRoleProfile(data.roleProfile);
-      localStorage.setItem('cadetconnect_token', data.token);
-      localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
-      if (data.roleProfile) {
-        localStorage.setItem('cadetconnect_role_profile', JSON.stringify(data.roleProfile));
-      }
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const connectGoogle = async (googleData) => {
-    if (!token) throw new Error('Authentication required');
-    const data = await safeFetchJson('/api/auth/connect/google', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(googleData)
-    });
-    if (!data.success) throw new Error(data.error || 'Failed to connect Google account');
-    setUser(data.user);
-    localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
-    return data;
-  };
-
-  const connectPhone = async (phone, otp) => {
-    if (!token) throw new Error('Authentication required');
-    const data = await safeFetchJson('/api/auth/connect/phone', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ phone, otp })
-    });
-    if (!data.success) throw new Error(data.error || 'Failed to link phone number');
-    setUser(data.user);
-    localStorage.setItem('cadetconnect_user', JSON.stringify(data.user));
-    return data;
-  };
-
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -236,10 +266,12 @@ export const AuthProvider = ({ children }) => {
       loading, 
       login, 
       loginWithGoogle,
+      loginWithLinkedIn,
+      loginWithFacebook,
       sendMobileOtp,
       verifyMobileOtp,
-      connectGoogle,
-      connectPhone,
+      forgotPassword,
+      resetPassword,
       registerCadet, 
       registerAspirant, 
       updateUserProfile,

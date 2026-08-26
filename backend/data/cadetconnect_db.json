@@ -394,6 +394,30 @@
   ],
   "connections": [
     {
+      "id": "610de8eb-5fdd-407a-a595-371c693c9e1a",
+      "createdAt": "2026-08-26T18:45:57.087Z",
+      "updatedAt": "2026-08-26T18:45:57.087Z",
+      "requesterId": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
+      "receiverId": "12321ed5-4d23-4222-864f-fe48d2811b9e",
+      "status": "ACCEPTED"
+    },
+    {
+      "id": "2123d555-c0e4-4027-ae2e-4378a220c1da",
+      "createdAt": "2026-08-26T18:45:54.530Z",
+      "updatedAt": "2026-08-26T18:45:54.530Z",
+      "requesterId": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
+      "receiverId": "cbfd9e51-8587-417d-b91c-e6dc75b1965d",
+      "status": "ACCEPTED"
+    },
+    {
+      "id": "abe9a50b-659a-46f2-aae6-522605f723cc",
+      "createdAt": "2026-08-26T18:45:51.401Z",
+      "updatedAt": "2026-08-26T18:45:51.401Z",
+      "requesterId": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
+      "receiverId": "a237f98e-b08c-4fde-a041-c6e8275399c0",
+      "status": "ACCEPTED"
+    },
+    {
       "id": "394c5929-dfea-45d4-b446-fe1aaf6cba62",
       "createdAt": "2026-08-24T17:59:11.813Z",
       "updatedAt": "2026-08-24T17:59:11.813Z",
@@ -822,6 +846,39 @@
   "conversations": [],
   "notifications": [
     {
+      "id": "f8c961ce-dc9c-4e69-9b28-cb33b06f0463",
+      "createdAt": "2026-08-26T18:45:57.087Z",
+      "updatedAt": "2026-08-26T18:45:57.087Z",
+      "userId": "12321ed5-4d23-4222-864f-fe48d2811b9e",
+      "actorName": "Cadet Google User",
+      "actorAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "type": "CONNECTION_ACCEPTED",
+      "message": "Cadet Google User connected with you on CadetConnect.",
+      "isRead": false
+    },
+    {
+      "id": "ec1745be-2d63-4f59-807e-8f7c2e8a2a00",
+      "createdAt": "2026-08-26T18:45:54.530Z",
+      "updatedAt": "2026-08-26T18:45:54.530Z",
+      "userId": "cbfd9e51-8587-417d-b91c-e6dc75b1965d",
+      "actorName": "Cadet Google User",
+      "actorAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "type": "CONNECTION_ACCEPTED",
+      "message": "Cadet Google User connected with you on CadetConnect.",
+      "isRead": false
+    },
+    {
+      "id": "579abc01-37b1-4e19-9c2e-93892a948953",
+      "createdAt": "2026-08-26T18:45:51.402Z",
+      "updatedAt": "2026-08-26T18:45:51.402Z",
+      "userId": "a237f98e-b08c-4fde-a041-c6e8275399c0",
+      "actorName": "Cadet Google User",
+      "actorAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "type": "CONNECTION_ACCEPTED",
+      "message": "Cadet Google User connected with you on CadetConnect.",
+      "isRead": false
+    },
+    {
       "id": "8699e64f-b3c7-4f7b-8178-2b7155a8876d",
       "createdAt": "2026-08-24T17:59:11.815Z",
       "updatedAt": "2026-08-24T17:59:11.815Z",
@@ -978,5 +1035,6 @@
       "targetType": "POST",
       "targetId": "post-103"
     }
-  ]
+  ],
+  "candidate_academic_profiles": []
 }

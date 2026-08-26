@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { ThumbsUp, MessageSquare, Repeat, Bookmark, Flag, Share2, Award, CheckCircle } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Repeat, Bookmark, Flag, Share2, Award, CheckCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const PostCard = ({ post }) => {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [appreciated, setAppreciated] = useState(false);
   const [count, setCount] = useState(post.appreciationsCount || 0);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
+  const [deleted, setDeleted] = useState(false);
+
+  const isAdmin = user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN');
+
+  if (deleted) return null;
 
   const handleAppreciate = async () => {
     if (!token) return alert('Please sign in to appreciate posts.');
@@ -76,23 +81,53 @@ export const PostCard = ({ post }) => {
   };
 
   const handleReport = async () => {
-    if (!token) return alert('Please sign in.');
-    const reason = prompt('Reason for reporting this post:');
-    if (reason) {
-      await fetch(`/api/feed/${post.id}/report`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ reason })
+    if (!token) return alert('Please sign in to report content.');
+    const reason = prompt('Reason for reporting this post to Admin Desk:');
+    if (reason && reason.trim()) {
+      try {
+        const res = await fetch('/api/admin/report', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          },
+          body: JSON.stringify({ 
+            targetType: 'POST',
+            targetId: post.id,
+            reason: reason.trim() 
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Report submitted to Admin Desk for review. Thank you!');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleAdminDelete = async () => {
+    if (!token) return;
+    if (!window.confirm('🛡️ Admin Action: Are you sure you want to delete this resource/post permanently?')) return;
+    try {
+      const res = await fetch(`/api/admin/resources/posts/${post.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Report submitted for admin review.');
+      const data = await res.json();
+      if (data.success) {
+        setDeleted(true);
+      } else {
+        alert(data.error || 'Failed to delete resource.');
+      }
+    } catch (err) {
+      console.error('Error deleting resource:', err);
     }
   };
 
   return (
-    <article className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm transition-all hover:border-slate-300">
+    <article className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm transition-all hover:border-slate-300 relative">
       {/* Author Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-3">
@@ -114,10 +149,24 @@ export const PostCard = ({ post }) => {
           </div>
         </div>
 
-        {/* Category Tag */}
-        <span className="text-[11px] font-semibold bg-sand-200 text-navy-800 px-2.5 py-1 rounded border border-slate-300">
-          {post.category}
-        </span>
+        <div className="flex items-center gap-2">
+          {/* Admin Delete Action Button */}
+          {isAdmin && (
+            <button
+              onClick={handleAdminDelete}
+              className="flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2.5 py-1 rounded-md text-[10px] border border-red-300 transition-colors shadow-sm"
+              title="Delete inappropriate resource (Admin)"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              <span>Delete (Admin)</span>
+            </button>
+          )}
+
+          {/* Category Tag */}
+          <span className="text-[11px] font-semibold bg-sand-200 text-navy-800 px-2.5 py-1 rounded border border-slate-300">
+            {post.category}
+          </span>
+        </div>
       </div>
 
       {/* Post Content */}
@@ -178,7 +227,7 @@ export const PostCard = ({ post }) => {
         <button
           onClick={handleReport}
           className="flex items-center space-x-1.5 px-2 py-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          title="Report Post"
+          title="Report Post to Admin"
         >
           <Flag className="w-3.5 h-3.5" />
         </button>

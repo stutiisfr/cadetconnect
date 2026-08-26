@@ -18,7 +18,7 @@
     {
       "id": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
       "createdAt": "2026-08-26T17:52:21.749Z",
-      "updatedAt": "2026-08-26T17:52:21.749Z",
+      "updatedAt": "2026-08-26T18:44:23.561Z",
       "email": "cadet.google.user@cadetconnect.org",
       "password": "$2a$10$tbd/VbfmXNuQ14oj9vh3OO1cJTgls66wzdkS.fiREQVZUcD5zhwm6",
       "name": "Cadet Google User",
@@ -29,7 +29,7 @@
       "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
       "location": "India",
       "bio": "Defence Aspirant connected via Google.",
-      "googleId": "google-oauth-1787766741568",
+      "googleId": "google-oauth-1787769863515",
       "googleConnected": true,
       "phone": "",
       "gender": "Not Specified",

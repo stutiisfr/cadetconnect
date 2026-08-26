@@ -1,8 +1,57 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../db/database');
 const { verifyToken, getOptionalUser } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Configure multer storage for post attachment uploads
+const uploadDir = path.join(__dirname, '../../data/uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `media_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('application/pdf') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image, PDF, and video files are allowed.'));
+    }
+  }
+});
+
+// File Upload Endpoint for Post Attachments & Media
+router.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No file uploaded.' });
+  }
+  // Construct relative / uploads path
+  const fileUrl = `/uploads/${req.file.filename}`;
+  return res.json({
+    success: true,
+    fileUrl,
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    mimetype: req.file.mimetype,
+    size: req.file.size
+  });
+});
 
 // 1. Get Home Feed with Category & Search Filter (public read)
 router.get('/', (req, res) => {

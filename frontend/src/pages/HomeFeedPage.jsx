@@ -29,6 +29,42 @@ export const HomeFeedPage = () => {
   const [customAuthorName, setCustomAuthorName] = useState(user ? user.name : 'Defence Aspirant');
   const [customAuthorRole, setCustomAuthorRole] = useState(user ? (user.verificationBadge || user.role) : 'Verified Cadet');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${API_BASE_URL}/api/feed/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && data.fileUrl) {
+        setNewMediaUrl(data.fileUrl);
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setNewMediaUrl(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewMediaUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const feedCategories = [
     'For You', 'NCC', 'Defence Preparation', 'Success Stories', 
@@ -497,15 +533,60 @@ export const HomeFeedPage = () => {
                 />
               </div>
 
+              {/* Media File Attachment Chooser */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-300 mb-1">Image / Attachment URL (Optional)</label>
+                <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  Add Image, Document, or Photo Attachment
+                </label>
+                
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*,application/pdf,video/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingFile}
+                    className="flex-1 flex items-center justify-center gap-2 bg-navy-900 hover:bg-navy-850 border border-amber-500/50 hover:border-amber-400 text-amber-300 font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md group"
+                  >
+                    <Camera className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                    <span>{uploadingFile ? 'Uploading file...' : '📁 Choose File from Device'}</span>
+                  </button>
+
+                  <span className="text-[10px] text-slate-400 uppercase font-mono">or</span>
+                </div>
+
                 <input
                   type="url"
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="Paste image / attachment URL (e.g. https://images.unsplash.com/...)"
                   value={newMediaUrl}
                   onChange={(e) => setNewMediaUrl(e.target.value)}
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
+
+                {/* Live Preview Thumbnail */}
+                {newMediaUrl && (
+                  <div className="mt-3 relative rounded-xl overflow-hidden border border-navy-700 max-h-48 bg-black/40 flex items-center justify-center group">
+                    <img 
+                      src={newMediaUrl} 
+                      alt="Attachment Preview" 
+                      className="max-h-48 w-full object-cover rounded-xl"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewMediaUrl('')}
+                      className="absolute top-2 right-2 bg-navy-950/90 text-white text-xs px-2 py-1 rounded-lg border border-red-500/50 hover:bg-red-600 transition-colors shadow-lg"
+                    >
+                      Remove File
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end space-x-2 pt-3 border-t border-navy-800">

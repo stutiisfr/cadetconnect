@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ThumbsUp, MessageSquare, Repeat, Bookmark, Flag, Share2, Award, CheckCircle, Trash2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config';
 
 export const PostCard = ({ post }) => {
   const { user, token } = useAuth();
@@ -178,7 +179,7 @@ export const PostCard = ({ post }) => {
       {post.mediaUrl && (
         <div className="mb-4 rounded-md overflow-hidden border border-slate-200 max-h-96">
           <img
-            src={post.mediaUrl}
+            src={post.mediaUrl.startsWith('http') || post.mediaUrl.startsWith('data:') ? post.mediaUrl : `${API_BASE_URL}${post.mediaUrl.startsWith('/') ? '' : '/'}${post.mediaUrl}`}
             alt="Post Attachment"
             className="w-full h-full object-cover"
           />

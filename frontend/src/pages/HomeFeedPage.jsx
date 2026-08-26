@@ -562,18 +562,18 @@ export const HomeFeedPage = () => {
                 </div>
 
                 <input
-                  type="url"
-                  placeholder="Paste image / attachment URL (e.g. https://images.unsplash.com/...)"
+                  type="text"
+                  placeholder="Paste image / attachment URL (e.g. https://images.unsplash.com/ or /uploads/...)"
                   value={newMediaUrl}
                   onChange={(e) => setNewMediaUrl(e.target.value)}
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
                 />
 
                 {/* Live Preview Thumbnail */}
                 {newMediaUrl && (
                   <div className="mt-3 relative rounded-xl overflow-hidden border border-navy-700 max-h-48 bg-black/40 flex items-center justify-center group">
                     <img 
-                      src={newMediaUrl} 
+                      src={newMediaUrl.startsWith('http') || newMediaUrl.startsWith('data:') ? newMediaUrl : `${API_BASE_URL}${newMediaUrl.startsWith('/') ? '' : '/'}${newMediaUrl}`} 
                       alt="Attachment Preview" 
                       className="max-h-48 w-full object-cover rounded-xl"
                       onError={(e) => { e.target.style.display = 'none'; }}
@@ -581,9 +581,9 @@ export const HomeFeedPage = () => {
                     <button
                       type="button"
                       onClick={() => setNewMediaUrl('')}
-                      className="absolute top-2 right-2 bg-navy-950/90 text-white text-xs px-2 py-1 rounded-lg border border-red-500/50 hover:bg-red-600 transition-colors shadow-lg"
+                      className="absolute top-2 right-2 bg-navy-950/90 text-white text-xs px-2 py-1 rounded-lg border border-red-500/50 hover:bg-red-600 transition-colors shadow-lg font-bold"
                     >
-                      Remove File
+                      Remove Attachment
                     </button>
                   </div>
                 )}

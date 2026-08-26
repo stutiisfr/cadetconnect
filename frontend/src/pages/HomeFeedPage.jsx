@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/PostCard';
+import { StoryTrayViewer } from '../components/StoryTrayViewer';
 import { API_BASE_URL, getApiUrl } from '../config';
 import { 
   Plus, Image, FileText, Award, HelpCircle, Flame, 
@@ -285,40 +286,12 @@ export const HomeFeedPage = () => {
         {/* Main Feed Content Column */}
         <main className="lg:col-span-6 space-y-4">
           
-          {/* 24-Hour Stories Tray */}
-          <div className="bg-navy-900/90 border border-navy-700/80 rounded-2xl p-3 shadow-xl text-white">
-            <div className="flex items-center justify-between mb-2.5 px-1">
-              <span className="text-xs font-bold text-amber-400 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
-                24-Hour Cadet Stories
-              </span>
-              <span className="text-[10px] text-slate-400">Expiring updates</span>
-            </div>
-
-            <div className="flex space-x-3 overflow-x-auto pb-1 scrollbar-none">
-              {/* Add Story Button */}
-              <button
-                onClick={() => setShowPostModal(true)}
-                className="flex-shrink-0 w-16 h-24 rounded-xl bg-navy-950 border-2 border-dashed border-amber-500/40 flex flex-col items-center justify-center gap-1 hover:border-amber-400 transition-colors"
-              >
-                <div className="w-6 h-6 rounded-full bg-amber-500 text-navy-950 flex items-center justify-center font-bold">
-                  <Plus className="w-4 h-4" />
-                </div>
-                <span className="text-[9px] font-bold text-slate-300">Add Story</span>
-              </button>
-
-              {/* Story Avatars */}
-              {stories.map((story) => (
-                <div key={story.id} className="flex-shrink-0 w-16 h-24 rounded-xl relative overflow-hidden group cursor-pointer border-2 border-amber-500 shadow-md">
-                  <img src={story.mediaUrl} alt="Story" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-transparent to-transparent"></div>
-                  <span className="absolute bottom-1 left-1 right-1 text-[9px] font-bold text-white truncate">
-                    {story.authorName.split(' ')[0]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* 24-Hour Instagram-Style Cadet Stories Tray */}
+          <StoryTrayViewer
+            stories={stories}
+            onStoryCreated={(newStory) => setStories(prev => [newStory, ...prev])}
+            onStoryDeleted={(id) => setStories(prev => prev.filter(s => s.id !== id))}
+          />
 
           {/* LINKEDIN-STYLE POST CREATION BAR (EVERYONE CAN POST!) */}
           <div className="bg-navy-900/90 border border-navy-700/80 rounded-2xl p-4 shadow-xl text-white">

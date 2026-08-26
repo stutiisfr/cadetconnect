@@ -199,4 +199,52 @@ router.post('/:id/save', verifyToken, (req, res) => {
   return res.json({ success: true, message: 'Post saved to your bookmarks.' });
 });
 
+// 7. Delete Post — Author or Admin
+router.delete('/:id', verifyToken, async (req, res) => {
+  const postId = req.params.id;
+  const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
+
+  try {
+    const success = await pgRepository.deletePost(postId, req.user.id, isAdmin);
+    
+    // Broadcast real-time deletion
+    const broadcastFn = req.app.get('broadcastWebSocketEvent');
+    if (broadcastFn) {
+      broadcastFn({
+        type: 'POST_DELETED',
+        postId,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return res.json({ success: true, message: 'Post deleted successfully.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 8. Edit / Update Post Content — Author
+router.put('/:id', verifyToken, async (req, res) => {
+  const postId = req.params.id;
+  const { content, category } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ success: false, error: 'Post content cannot be empty.' });
+  }
+
+  try {
+    const sql = require('../db/neonDb').getNeonSql();
+    if (sql) {
+      await sql`
+        UPDATE posts SET content = ${content.trim()}, category = COALESCE(${category || null}, category), updated_at = NOW()
+        WHERE id = ${postId} AND (author_id = ${req.user.id} OR ${req.user.role === 'ADMIN'})
+      `;
+    }
+    db.update('posts', p => p.id === postId, { content: content.trim(), ...(category && { category }) });
+
+    return res.json({ success: true, message: 'Post updated successfully.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

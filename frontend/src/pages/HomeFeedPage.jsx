@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { PostCard } from '../components/PostCard';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, getApiUrl } from '../config';
 import { 
   Plus, Image, FileText, Award, HelpCircle, Flame, 
   Send, Sparkles, Filter, ShieldCheck, Clock, Radio, 
@@ -37,33 +37,29 @@ export const HomeFeedPage = () => {
     if (!file) return;
 
     setUploadingFile(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Url = reader.result;
+      setNewMediaUrl(base64Url);
 
-      const res = await fetch(`${API_BASE_URL}/api/feed/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success && data.fileUrl) {
-        setNewMediaUrl(data.fileUrl);
-      } else {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setNewMediaUrl(reader.result);
-        };
-        reader.readAsDataURL(file);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(getApiUrl('/api/feed/upload'), {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success && data.fileUrl) {
+          setNewMediaUrl(getApiUrl(data.fileUrl));
+        }
+      } catch (err) {
+        // Retain Data URL Base64 preview fallback
+      } finally {
+        setUploadingFile(false);
       }
-    } catch (err) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewMediaUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } finally {
-      setUploadingFile(false);
-    }
+    };
+    reader.readAsDataURL(file);
   };
 
   const feedCategories = [

@@ -1,4 +1,6 @@
 // Dynamic API Base Configuration for Local Dev & Production Deployments
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 export const getApiUrl = (endpoint) => {
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   

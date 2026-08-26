@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Compass, Users, MessageSquare, UserCheck, BookOpen, Bot } from 'lucide-react';
+import { Home, Compass, Users, MessageSquare, UserCheck, BookOpen, Bot, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const MobileNav = () => {
@@ -11,12 +11,12 @@ export const MobileNav = () => {
 
   const links = [
     { label: 'Home', path: '/home', icon: Home },
+    { label: 'Eligibility', path: '/eligibility', icon: ShieldCheck },
     { label: 'Discover', path: '/discover', icon: Compass },
     { label: 'Groups', path: '/communities', icon: Users },
     { label: 'Mentors', path: '/mentorship', icon: UserCheck },
     { label: 'Notes', path: '/knowledge', icon: BookOpen },
     { label: 'AI Guide', path: '/ai-assistant', icon: Bot },
-    { label: 'Chat', path: '/messages', icon: MessageSquare },
   ];
 
   return (

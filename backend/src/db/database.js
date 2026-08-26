@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const DATA_DIR = path.join(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'cadetconnect_db.json');
+const DB_TMP_FILE = path.join(DATA_DIR, 'cadetconnect_db.tmp.json');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -42,6 +43,8 @@ class LocalDatabase {
       reports: [],
       saved_items: []
     };
+    this._saveTimer = null;
+    this._saving = false;
     this.load();
   }
 
@@ -57,12 +60,26 @@ class LocalDatabase {
     }
   }
 
+  /**
+   * Debounced async save — coalesces rapid writes into a single disk write.
+   * Uses temp-file + rename pattern for crash safety.
+   */
   save() {
-    try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to save database file:', err.message);
-    }
+    if (this._saveTimer) return; // Already scheduled
+    this._saveTimer = setTimeout(async () => {
+      this._saveTimer = null;
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const json = JSON.stringify(this.data, null, 2);
+        await fs.promises.writeFile(DB_TMP_FILE, json, 'utf-8');
+        await fs.promises.rename(DB_TMP_FILE, DB_FILE);
+      } catch (err) {
+        console.error('Failed to save database file:', err.message);
+      } finally {
+        this._saving = false;
+      }
+    }, 100); // 100ms debounce
   }
 
   // Generic DB methods
@@ -73,12 +90,29 @@ class LocalDatabase {
     return this.data[name];
   }
 
+  /**
+   * Normalizes a filter argument into a predicate function.
+   * - function → used directly
+   * - string/number → strict ID-only match (no broad field guessing)
+   * - anything else → match nothing
+   */
+  _normalizeFilter(filterFn) {
+    if (typeof filterFn === 'function') return filterFn;
+    if (typeof filterFn === 'string' || typeof filterFn === 'number') {
+      const val = String(filterFn);
+      return item => item.id === val;
+    }
+    return () => false;
+  }
+
   find(collection, filterFn = () => true) {
-    return this.getCollection(collection).filter(filterFn);
+    const fn = this._normalizeFilter(filterFn);
+    return this.getCollection(collection).filter(fn);
   }
 
   findOne(collection, filterFn) {
-    return this.getCollection(collection).find(filterFn) || null;
+    const fn = this._normalizeFilter(filterFn);
+    return this.getCollection(collection).find(fn) || null;
   }
 
   insert(collection, item) {
@@ -95,10 +129,11 @@ class LocalDatabase {
   }
 
   update(collection, filterFn, updateFields) {
+    const fn = this._normalizeFilter(filterFn);
     const records = this.getCollection(collection);
     let updatedCount = 0;
     records.forEach((rec, idx) => {
-      if (filterFn(rec)) {
+      if (fn(rec)) {
         records[idx] = {
           ...rec,
           ...updateFields,
@@ -112,9 +147,10 @@ class LocalDatabase {
   }
 
   delete(collection, filterFn) {
+    const fn = this._normalizeFilter(filterFn);
     const records = this.getCollection(collection);
     const initialLen = records.length;
-    this.data[collection] = records.filter(rec => !filterFn(rec));
+    this.data[collection] = records.filter(rec => !fn(rec));
     const deletedCount = initialLen - this.data[collection].length;
     if (deletedCount > 0) this.save();
     return deletedCount;

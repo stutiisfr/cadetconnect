@@ -45,10 +45,13 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('cadetconnect_role_profile', JSON.stringify(data.roleProfile));
             }
           } else {
+            // Token is no longer valid
             logout();
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.warn('Token validation failed:', err.message);
+        });
     }
   }, [token]);
 
@@ -79,12 +82,11 @@ export const AuthProvider = ({ children }) => {
   const registerCadet = async (payload) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register/cadet', {
+      const data = await safeFetchJson('/api/auth/register/cadet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Registration failed');
 
       setToken(data.token);
@@ -100,12 +102,11 @@ export const AuthProvider = ({ children }) => {
   const registerAspirant = async (payload) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register/aspirant', {
+      const data = await safeFetchJson('/api/auth/register/aspirant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Registration failed');
 
       setToken(data.token);
@@ -222,6 +223,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('cadetconnect_role_profile');
   };
 
+  const updateUserProfile = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('cadetconnect_user', JSON.stringify(updatedUser));
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -236,6 +242,7 @@ export const AuthProvider = ({ children }) => {
       connectPhone,
       registerCadet, 
       registerAspirant, 
+      updateUserProfile,
       logout 
     }}>
       {children}

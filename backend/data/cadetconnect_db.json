@@ -1,6 +1,44 @@
 {
   "users": [
     {
+      "id": "a237f98e-b08c-4fde-a041-c6e8275399c0",
+      "createdAt": "2026-08-26T18:00:34.623Z",
+      "updatedAt": "2026-08-26T18:00:34.623Z",
+      "email": "vikram.test@cadetconnect.org",
+      "password": "$2a$10$oH2SoT6znWH8N6AWhpVDAOIjE6NBU7mZmGfIeUw09./j1ptlDvcWG",
+      "name": "Vikram Samant",
+      "username": "vikram_test_698",
+      "role": "ASPIRANT",
+      "isVerified": true,
+      "verificationBadge": "Verified Aspirant",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80",
+      "location": "India",
+      "bio": "Defence Aspirant preparing for officer entries."
+    },
+    {
+      "id": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
+      "createdAt": "2026-08-26T17:52:21.749Z",
+      "updatedAt": "2026-08-26T17:52:21.749Z",
+      "email": "cadet.google.user@cadetconnect.org",
+      "password": "$2a$10$tbd/VbfmXNuQ14oj9vh3OO1cJTgls66wzdkS.fiREQVZUcD5zhwm6",
+      "name": "Cadet Google User",
+      "username": "cadet_google_user_176",
+      "role": "ASPIRANT",
+      "isVerified": true,
+      "verificationBadge": "Verified Aspirant",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+      "location": "India",
+      "bio": "Defence Aspirant connected via Google.",
+      "googleId": "google-oauth-1787766741568",
+      "googleConnected": true,
+      "phone": "",
+      "gender": "Not Specified",
+      "dob": "",
+      "college": "University",
+      "course": "",
+      "year": ""
+    },
+    {
       "id": "cbfd9e51-8587-417d-b91c-e6dc75b1965d",
       "createdAt": "2026-08-24T17:47:29.978Z",
       "updatedAt": "2026-08-24T17:47:29.978Z",
@@ -48,17 +86,17 @@
     {
       "id": "e2031eac-0e65-4ca4-9d70-d5bd56201c6d",
       "createdAt": "2026-08-24T17:46:50.685Z",
-      "updatedAt": "2026-08-24T17:46:50.685Z",
+      "updatedAt": "2026-08-26T18:18:54.331Z",
       "email": "cadet_543210@cadetconnect.org",
       "password": "$2a$10$QhIyb3MEXoQG6a3MV09R2e2oUUVLIAAoi2c8stvFK0HMLCIbo5T5G",
-      "name": "Cadet (3210)",
+      "name": "Cadet Prateek Singh",
       "username": "cadet_543210_808",
       "role": "ASPIRANT",
       "isVerified": true,
       "verificationBadge": "Verified Aspirant",
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
-      "location": "India",
-      "bio": "Defence community member authenticated via mobile OTP.",
+      "location": "Bhubaneswar, Odisha",
+      "bio": "4 (O) Bn NCC Unit Odisha Directorate",
       "phone": "9876543210",
       "phoneVerified": true,
       "gender": "Not Specified",
@@ -187,6 +225,43 @@
   ],
   "aspirant_profiles": [
     {
+      "id": "7fe808d9-5083-480b-83ba-76dfd5c0dddd",
+      "createdAt": "2026-08-26T18:00:34.624Z",
+      "updatedAt": "2026-08-26T18:00:34.624Z",
+      "userId": "a237f98e-b08c-4fde-a041-c6e8275399c0",
+      "targetExams": [
+        "CDS",
+        "AFCAT"
+      ],
+      "targetEntry": "CDS / AFCAT",
+      "preferredService": "Indian Army",
+      "prepLevel": "Intermediate",
+      "skills": [],
+      "interests": []
+    },
+    {
+      "id": "14bba8c4-12c8-4e4c-888b-faefdaaae806",
+      "createdAt": "2026-08-26T17:52:21.753Z",
+      "updatedAt": "2026-08-26T17:52:21.753Z",
+      "userId": "bd046c35-8f36-42e2-931e-8be8fe9b2201",
+      "targetExams": [
+        "CDS",
+        "NDA",
+        "AFCAT"
+      ],
+      "targetEntry": "CDS / AFCAT",
+      "preferredService": "Indian Armed Forces",
+      "prepLevel": "Beginner",
+      "skills": [
+        "General Knowledge",
+        "Current Affairs"
+      ],
+      "interests": [
+        "Defence Leadership",
+        "SSB Prep"
+      ]
+    },
+    {
       "id": "5301507b-2af7-47ab-ad59-54e9a499fbe7",
       "createdAt": "2026-08-24T17:47:29.981Z",
       "updatedAt": "2026-08-24T17:47:29.981Z",
@@ -230,7 +305,7 @@
     {
       "id": "24128663-22eb-491e-a134-fd1ccd9b1d96",
       "createdAt": "2026-08-24T17:46:50.686Z",
-      "updatedAt": "2026-08-24T17:46:50.686Z",
+      "updatedAt": "2026-08-26T18:18:54.332Z",
       "userId": "e2031eac-0e65-4ca4-9d70-d5bd56201c6d",
       "targetExams": [
         "CDS",
@@ -345,6 +420,26 @@
   ],
   "follows": [],
   "posts": [
+    {
+      "id": "0e88edc8-11f3-491b-b8bc-858fae4549e5",
+      "createdAt": "2026-08-26T18:13:40.382Z",
+      "updatedAt": "2026-08-26T18:13:40.383Z",
+      "authorId": "usr-candidate-1787768020382",
+      "authorName": "SUO Ananya Sen",
+      "authorRole": "Senior Under Officer 1st Bn",
+      "authorAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "category": "NCC",
+      "content": "Jai Hind cadets! Real-time feed posting is now active across CadetConnect!",
+      "mediaUrl": null,
+      "appreciationsCount": 0,
+      "commentsCount": 0,
+      "repostsCount": 0,
+      "savedCount": 0,
+      "tags": [
+        "CadetConnect",
+        "NCC"
+      ]
+    },
     {
       "id": "post-103",
       "createdAt": "2026-08-24T12:38:39.444Z",

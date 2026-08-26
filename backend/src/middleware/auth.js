@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+// Single source of truth for JWT secret across the entire application
 const JWT_SECRET = process.env.JWT_SECRET || 'cadetconnect_super_secret_jwt_key_2026';
 
 function generateToken(user) {
@@ -32,6 +33,27 @@ function verifyToken(req, res, next) {
   }
 }
 
+/**
+ * Centralized optional user extractor. Returns user object or null.
+ * All routes must use THIS instead of rolling their own JWT logic.
+ */
+function getOptionalUser(req, db) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      if (db) {
+        return db.findOne('users', u => u.id === decoded.id);
+      }
+      return decoded;
+    }
+  } catch (err) {
+    // Token invalid or expired — treat as unauthenticated
+  }
+  return null;
+}
+
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
@@ -44,4 +66,4 @@ function requireRole(...allowedRoles) {
   };
 }
 
-module.exports = { generateToken, verifyToken, requireRole, JWT_SECRET };
+module.exports = { generateToken, verifyToken, getOptionalUser, requireRole, JWT_SECRET };

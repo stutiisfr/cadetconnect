@@ -31,6 +31,7 @@ export const Navbar = () => {
   // Core nav links visible on desktop & laptop headers
   const primaryNavLinks = [
     { label: 'Home', path: '/home', icon: Home },
+    { label: 'Exam Eligibility', path: '/eligibility', icon: ShieldAlert },
     { label: 'Network', path: '/network', icon: Users },
     { label: 'Discover', path: '/discover', icon: Compass },
     { label: 'Knowledge', path: '/knowledge', icon: BookOpen },

@@ -2,11 +2,59 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
-const { generateToken, verifyToken } = require('../middleware/auth');
+const { generateToken, verifyToken, JWT_SECRET } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Login
+// ───────────────────────────────────────────────────────────────
+// In-memory OTP store (phone -> { otp, expiresAt })
+// ───────────────────────────────────────────────────────────────
+const otpStore = new Map();
+
+// Clean up expired OTPs every 5 minutes to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [phone, entry] of otpStore.entries()) {
+    if (now > entry.expiresAt) {
+      otpStore.delete(phone);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// ───────────────────────────────────────────────────────────────
+// GET /me — Validate current token & return user (CRITICAL)
+// ───────────────────────────────────────────────────────────────
+router.get('/me', verifyToken, (req, res) => {
+  const user = db.findOne('users', u => u.id === req.user.id);
+  if (!user) {
+    return res.status(404).json({ success: false, error: 'User not found.' });
+  }
+
+  const { password: _, ...userWithoutPassword } = user;
+
+  let roleProfile = null;
+  if (user.role === 'CADET') {
+    const cp = db.findOne('cadet_profiles', p => p.userId === user.id);
+    if (cp) {
+      const { regimentalNumber, ...cpPublic } = cp;
+      roleProfile = cpPublic;
+    }
+  } else if (user.role === 'ASPIRANT') {
+    roleProfile = db.findOne('aspirant_profiles', p => p.userId === user.id);
+  } else if (user.role === 'MENTOR') {
+    roleProfile = db.findOne('mentor_profiles', p => p.userId === user.id);
+  }
+
+  return res.json({
+    success: true,
+    user: userWithoutPassword,
+    roleProfile
+  });
+});
+
+// ───────────────────────────────────────────────────────────────
+// POST /login — Email & Password
+// ───────────────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -53,7 +101,9 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Register NCC Cadet (REGIMENTAL NUMBER IS MANDATORY)
+// ───────────────────────────────────────────────────────────────
+// POST /register/cadet — NCC Cadet Registration (REGIMENTAL NUMBER MANDATORY)
+// ───────────────────────────────────────────────────────────────
 router.post('/register/cadet', async (req, res) => {
   try {
     const {
@@ -65,6 +115,10 @@ router.post('/register/cadet', async (req, res) => {
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, error: 'Name, email, and password are required.' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
     }
 
     // MANDATORY REQUIREMENT FOR NCC CADET
@@ -80,7 +134,7 @@ router.post('/register/cadet', async (req, res) => {
       return res.status(400).json({ success: false, error: 'User with this email already exists.' });
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
     const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
 
@@ -143,7 +197,9 @@ router.post('/register/cadet', async (req, res) => {
   }
 });
 
-// Register Defence Aspirant (DOES NOT REQUIRE REGIMENTAL NUMBER)
+// ───────────────────────────────────────────────────────────────
+// POST /register/aspirant — Defence Aspirant Registration
+// ───────────────────────────────────────────────────────────────
 router.post('/register/aspirant', async (req, res) => {
   try {
     const {
@@ -156,12 +212,16 @@ router.post('/register/aspirant', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Name, email, and password are required.' });
     }
 
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
+    }
+
     const existing = db.findOne('users', u => u.email.toLowerCase() === email.toLowerCase());
     if (existing) {
       return res.status(400).json({ success: false, error: 'User with this email already exists.' });
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
     const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
 
@@ -208,10 +268,9 @@ router.post('/register/aspirant', async (req, res) => {
   }
 });
 
-// In-memory OTP store (phone -> { otp, expiresAt })
-const otpStore = new Map();
-
-// Google Sign-In / Registration
+// ───────────────────────────────────────────────────────────────
+// POST /google — Google Sign-In / Registration
+// ───────────────────────────────────────────────────────────────
 router.post('/google', async (req, res) => {
   try {
     const { email, name, avatar, googleId } = req.body;
@@ -224,7 +283,7 @@ router.post('/google', async (req, res) => {
     if (!user) {
       // Create new user automatically from Google Profile as Defence Aspirant by default
       const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(12);
       const randomPassword = await bcrypt.hash(uuidv4(), salt);
 
       user = db.insert('users', {
@@ -258,8 +317,8 @@ router.post('/google', async (req, res) => {
         interests: ['Defence Leadership', 'SSB Prep']
       });
     } else {
-      // Update Google connection status
-      db.update('users', user.id, { googleConnected: true, googleId: googleId || user.googleId || 'google-' + uuidv4() });
+      // Update Google connection status — use filter function, not string ID
+      db.update('users', u => u.id === user.id, { googleConnected: true, googleId: googleId || user.googleId || 'google-' + uuidv4() });
       user = db.findOne('users', u => u.id === user.id);
     }
 
@@ -291,7 +350,9 @@ router.post('/google', async (req, res) => {
   }
 });
 
-// Send Mobile OTP
+// ───────────────────────────────────────────────────────────────
+// POST /send-otp — Send Mobile OTP
+// ───────────────────────────────────────────────────────────────
 router.post('/send-otp', async (req, res) => {
   try {
     const { phone } = req.body;
@@ -301,7 +362,7 @@ router.post('/send-otp', async (req, res) => {
 
     const cleanPhone = phone.trim().replace(/[^0-9+]/g, '');
     
-    // Generate realistic 6-digit OTP (e.g., 749201 or demo standard 123456)
+    // Generate realistic 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
@@ -309,18 +370,27 @@ router.post('/send-otp', async (req, res) => {
 
     console.log(`[AUTH OTP SERVICE] OTP for mobile ${cleanPhone}: ${otp}`);
 
-    return res.json({
+    // In production, integrate an SMS gateway (Twilio, MSG91, etc.)
+    // For development, the OTP is logged to the server console.
+    const response = {
       success: true,
-      message: `OTP sent successfully to ${cleanPhone}.`,
-      // Return demoOtp for instant frictionless testing in development
-      demoOtp: otp
-    });
+      message: `OTP sent successfully to ${cleanPhone}.`
+    };
+
+    // Only expose demo OTP in development mode
+    if (process.env.NODE_ENV !== 'production') {
+      response.demoOtp = otp;
+    }
+
+    return res.json(response);
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Verify Mobile OTP & Login/Register
+// ───────────────────────────────────────────────────────────────
+// POST /verify-otp — Verify Mobile OTP & Login/Register
+// ───────────────────────────────────────────────────────────────
 router.post('/verify-otp', async (req, res) => {
   try {
     const { phone, otp, name, role } = req.body;
@@ -331,14 +401,14 @@ router.post('/verify-otp', async (req, res) => {
     const cleanPhone = phone.trim().replace(/[^0-9+]/g, '');
     const stored = otpStore.get(cleanPhone);
 
-    // Accept generated OTP or universal demo OTP '123456' for ease of testing
-    const isValid = (stored && stored.otp === otp && Date.now() <= stored.expiresAt) || otp === '123456' || (stored && stored.otp === otp);
+    // Validate OTP — NO backdoor, strict match only
+    const isValid = stored && stored.otp === otp && Date.now() <= stored.expiresAt;
 
     if (!isValid) {
       return res.status(400).json({ success: false, error: 'Invalid or expired OTP. Please enter the correct code.' });
     }
 
-    // Clean up OTP
+    // Clean up OTP after successful verification
     otpStore.delete(cleanPhone);
 
     // Look for user with this phone or normalized phone
@@ -348,7 +418,7 @@ router.post('/verify-otp', async (req, res) => {
       // Auto register user with phone
       const selectedRole = role === 'CADET' ? 'CADET' : 'ASPIRANT';
       const userEmail = `cadet_${cleanPhone.slice(-6)}@cadetconnect.org`;
-      const salt = await bcrypt.genSalt(10);
+      const salt = await bcrypt.genSalt(12);
       const randomPassword = await bcrypt.hash(uuidv4(), salt);
       const username = `cadet_${cleanPhone.slice(-6)}_${Math.floor(Math.random() * 1000)}`;
 
@@ -399,7 +469,8 @@ router.post('/verify-otp', async (req, res) => {
         });
       }
     } else {
-      db.update('users', user.id, { phoneVerified: true });
+      // Use filter function, not string ID
+      db.update('users', u => u.id === user.id, { phoneVerified: true });
       user = db.findOne('users', u => u.id === user.id);
     }
 
@@ -431,11 +502,13 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
-// Connect/Link Google Account
+// ───────────────────────────────────────────────────────────────
+// POST /connect/google — Link Google Account
+// ───────────────────────────────────────────────────────────────
 router.post('/connect/google', verifyToken, async (req, res) => {
   try {
     const { googleId, email } = req.body;
-    db.update('users', req.user.id, {
+    db.update('users', u => u.id === req.user.id, {
       googleConnected: true,
       googleId: googleId || 'google-' + uuidv4(),
       googleEmail: email || req.user.email
@@ -448,7 +521,9 @@ router.post('/connect/google', verifyToken, async (req, res) => {
   }
 });
 
-// Connect/Link Phone Number with OTP
+// ───────────────────────────────────────────────────────────────
+// POST /connect/phone — Link Phone Number with OTP
+// ───────────────────────────────────────────────────────────────
 router.post('/connect/phone', verifyToken, async (req, res) => {
   try {
     const { phone, otp } = req.body;
@@ -457,12 +532,13 @@ router.post('/connect/phone', verifyToken, async (req, res) => {
     }
     const cleanPhone = phone.trim().replace(/[^0-9+]/g, '');
     const stored = otpStore.get(cleanPhone);
-    const isValid = (stored && stored.otp === otp) || otp === '123456';
+    // Strict OTP validation — no backdoor
+    const isValid = stored && stored.otp === otp && Date.now() <= stored.expiresAt;
     if (!isValid) {
-      return res.status(400).json({ success: false, error: 'Invalid OTP code.' });
+      return res.status(400).json({ success: false, error: 'Invalid or expired OTP code.' });
     }
     otpStore.delete(cleanPhone);
-    db.update('users', req.user.id, {
+    db.update('users', u => u.id === req.user.id, {
       phone: cleanPhone,
       phoneVerified: true
     });

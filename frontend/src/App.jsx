@@ -22,6 +22,7 @@ import { OpportunitiesPage } from './pages/OpportunitiesPage';
 import { PrivacySettingsPage } from './pages/PrivacySettingsPage';
 import { AdminPanelPage } from './pages/AdminPanelPage';
 import { AiAssistantPage } from './pages/AiAssistantPage';
+import { ExamEligibilityPage } from './pages/ExamEligibilityPage';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -41,6 +42,8 @@ function AppRoutes() {
           
           {/* Protected Main Pages */}
           <Route path="/home" element={<ProtectedRoute><HomeFeedPage /></ProtectedRoute>} />
+          <Route path="/eligibility" element={<ProtectedRoute><ExamEligibilityPage /></ProtectedRoute>} />
+          <Route path="/exam-eligibility" element={<ProtectedRoute><ExamEligibilityPage /></ProtectedRoute>} />
           <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
           <Route path="/network" element={<ProtectedRoute><NetworkPage /></ProtectedRoute>} />
           <Route path="/profile/:username" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
